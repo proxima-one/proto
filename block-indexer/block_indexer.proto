@@ -1,0 +1,133 @@
+syntax = "proto3";
+package proxima;
+
+message Block {
+  string id = 1;
+  BlockHeader header = 2;
+  repeated Transaction transactions = 3;
+}
+
+message BlockHeader {
+  int32 number = 1;
+  uint32 timestamp = 2;
+  string hash = 3;
+  string parentHash = 4;
+  string receiptsRoot = 5;
+  string transactionsRoot = 6;
+  string miner = 7;
+  uint32 gasUsed = 8;
+  uint32 gasLimit = 9;
+  string difficulty = 10;
+  string extraData = 11;
+  string nonce = 12;
+  string sha3Uncles = 13;
+  string mixHash = 14;
+  string stateRoot = 15;
+  string totalDifficulty = 16;
+  uint32 size = 17;
+}
+
+message Transaction {
+  TransactionData data = 1;
+  TransactionReceipt receipt = 2;
+}
+
+message TransactionData {
+  string from = 1;
+  string to = 2;
+  string hash = 3;
+  string value = 4;
+  string gas = 5;
+  string gasPrice = 6;
+  string input = 7;
+}
+
+message TransactionReceipt {
+  uint32 cumulativeGasUsed = 1;
+  uint32 gasUsed = 2;
+  bool status = 3;
+  repeated Event events = 4;
+}
+
+message Event {
+  int32 index = 1;
+  EventPayload payload = 2;
+}
+
+message EventPayload {
+  string address = 1;
+  string data = 2;
+  repeated string topics = 3;
+}
+
+message Filter {
+  string id = 1;
+  FilterParams params = 2;
+}
+
+message FilterParams {
+  repeated string addresses = 2;
+}
+
+message BlockResponse {
+  string error = 1;
+  Block result = 2;
+}
+
+message GetBlocksRequest {
+  repeated string ids = 1;
+  string blockchainId = 2;
+  string applyFilterId = 3;
+  FilterParams filter = 4;
+}
+
+message GetBlocksResponse {
+  string error = 1;
+  repeated Block result = 2;
+}
+
+message CreateFilterRequest {
+  Filter newFilter = 1;
+}
+
+message FindFilterRequest {
+  string id = 1;
+}
+
+message ExtendFilterRequest {
+  string id = 1;
+  repeated string addresses = 3;
+}
+
+message FilterResponse {
+  string error = 1;
+  Filter result = 2;
+}
+
+message RemoveFilterRequest {
+  string id = 1;
+}
+
+message RemoveFilterResponse {
+  string error = 1;
+}
+
+message GetHeadersStreamRequest {
+  string startId = 1;
+  string endId = 2;
+  string blockchainId = 3;
+}
+
+message GetHeadersStreamResponse {
+  string error = 1;
+  BlockHeader result = 2;
+}
+
+service Api {
+  rpc FindBlocksById(GetBlocksRequest) returns (GetBlocksResponse) {};
+  rpc GetHeadersStream(GetHeadersStreamRequest) returns (stream GetHeadersStreamResponse) {};
+  rpc FindFilter(FindFilterRequest) returns (FilterResponse) {};
+  rpc CreateFilter(CreateFilterRequest) returns (FilterResponse) {};
+  rpc ExtendFilter(ExtendFilterRequest) returns (FilterResponse) {};
+  rpc RemoveFilter(RemoveFilterRequest) returns (RemoveFilterResponse) {};
+}
