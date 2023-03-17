@@ -3,6 +3,15 @@ syntax = "proto3";
 package stream_consumer.v1alpha1;
 
 import "model/v1/model.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    version: "1.0";
+  };
+  schemes: [HTTP, HTTPS];
+};
 
 message FindStreamRequest {
   string stream_id = 1;
@@ -32,9 +41,9 @@ message GetStateTransitionsRequest {
 }
 
 enum Direction {
-    NEXT = 0;
-    LAST = 1;
-  }
+  NEXT = 0;
+  LAST = 1;
+}
 
 message GetStateTransitionsResponse {
   repeated model.v1.StateTransition state_transitions = 1;
@@ -51,8 +60,25 @@ message StreamStateTransitionsResponse {
 
 
 service StreamConsumerService {
-  rpc FindStream(FindStreamRequest) returns (FindStreamResponse) {}
-  rpc FindOffset(FindOffsetRequest) returns (FindOffsetResponse) {}
-  rpc GetStateTransitions(GetStateTransitionsRequest) returns (GetStateTransitionsResponse) {}
-  rpc StreamStateTransitions(StreamStateTransitionsRequest) returns (stream StreamStateTransitionsResponse) {}
+  rpc FindStream(FindStreamRequest) returns (FindStreamResponse) {
+    option (google.api.http) = {
+      get: "/api/consumer/{stream_id}"
+    };
+  }
+  rpc FindOffset(FindOffsetRequest) returns (FindOffsetResponse) {
+    option (google.api.http) = {
+      get: "/api/consumer/{stream_id}/offset" // ?height & ?timestamp.epochMs are optional
+    };
+  }
+  rpc GetStateTransitions(GetStateTransitionsRequest) returns (GetStateTransitionsResponse) {
+    option (google.api.http) = {
+      post: "/api/consumer/{stream_id}/transitions"
+      body: "*"
+    };
+  }
+  rpc StreamStateTransitions(StreamStateTransitionsRequest) returns (stream StreamStateTransitionsResponse) {
+    option (google.api.http) = {
+      get: "/api/consumer/{stream_id}/stream"
+    };
+  }
 }

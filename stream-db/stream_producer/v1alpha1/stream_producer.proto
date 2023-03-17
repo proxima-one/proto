@@ -3,6 +3,15 @@ syntax = "proto3";
 package stream_producer.v1alpha1;
 
 import "model/v1/model.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    version: "1.0";
+  };
+  schemes: [HTTP, HTTPS];
+};
 
 message ProducerState {
   repeated model.v1.StreamStateRef input_streams = 1;
@@ -22,7 +31,7 @@ message StreamEvents {
 message CreateProducerRequest {
   string id = 1;
   repeated string output_streams = 2;
-  bool  force = 3;
+  bool force = 3;
   optional bytes user_data = 4;
 }
 
@@ -50,7 +59,21 @@ message ProduceEventsResponse {
 }
 
 service StreamProducerService {
-  rpc CreateProducer(CreateProducerRequest) returns (CreateProducerResponse) {}
-  rpc GetProducer(GetProducerRequest) returns (GetProducerResponse) {}
-  rpc ProduceEvents(ProduceEventsRequest) returns (ProduceEventsResponse) {}
+  rpc CreateProducer(CreateProducerRequest) returns (CreateProducerResponse) {
+    option (google.api.http) = {
+      post: "/api/producer/create"
+      body: "*"
+    };
+  }
+  rpc GetProducer(GetProducerRequest) returns (GetProducerResponse) {
+    option (google.api.http) = {
+      get: "/api/producer/{id}"
+    };
+  }
+  rpc ProduceEvents(ProduceEventsRequest) returns (ProduceEventsResponse) {
+    option (google.api.http) = {
+      post: "/api/producer/produce/{update_token}"
+      body: "*"
+    };
+  }
 }
