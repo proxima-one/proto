@@ -50,6 +50,7 @@ message GetProducerResponse {
 
 message ProduceEventsRequest {
   string update_token = 1;
+  ProducerState prev_producer_state = 4;
   ProducerState producer_state = 2;
   repeated StreamEvents stream_events = 3;
 }
