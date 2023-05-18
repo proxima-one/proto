@@ -1,5 +1,6 @@
 syntax = "proto3";
-package proxima;
+
+package block_indexer;
 
 message Block {
   string id = 1;
@@ -11,19 +12,19 @@ message BlockHeader {
   int32 number = 1;
   uint32 timestamp = 2;
   string hash = 3;
-  string parentHash = 4;
-  string receiptsRoot = 5;
-  string transactionsRoot = 6;
+  string parent_hash = 4;
+  string receipts_root = 5;
+  string transactions_root = 6;
   string miner = 7;
-  uint32 gasUsed = 8;
-  uint32 gasLimit = 9;
+  uint64 gas_used = 8;
+  uint64 gas_limit = 9;
   string difficulty = 10;
-  string extraData = 11;
+  string extra_data = 11;
   string nonce = 12;
-  string sha3Uncles = 13;
-  string mixHash = 14;
-  string stateRoot = 15;
-  string totalDifficulty = 16;
+  string sha3_uncles = 13;
+  string mix_hash = 14;
+  string state_root = 15;
+  string total_difficulty = 16;
   uint32 size = 17;
 }
 
@@ -38,13 +39,13 @@ message TransactionData {
   string hash = 3;
   string value = 4;
   string gas = 5;
-  string gasPrice = 6;
+  string gas_price = 6;
   string input = 7;
 }
 
 message TransactionReceipt {
-  uint32 cumulativeGasUsed = 1;
-  uint32 gasUsed = 2;
+  uint32 cumulative_gas_used = 1;
+  uint32 gas_used = 2;
   bool status = 3;
   repeated Event events = 4;
 }
@@ -74,20 +75,19 @@ message BlockResponse {
   Block result = 2;
 }
 
-message GetBlocksRequest {
+message FindBlocksRequest {
   repeated string ids = 1;
-  string blockchainId = 2;
-  string applyFilterId = 3;
-  FilterParams filter = 4;
+  optional string blockchain_id = 2;
+  optional string apply_filter_id = 3;
+  optional FilterParams filter = 4;
 }
 
-message GetBlocksResponse {
-  string error = 1;
+message FindBlocksResponse {
   repeated Block result = 2;
 }
 
 message CreateFilterRequest {
-  Filter newFilter = 1;
+  Filter new_filter = 1;
 }
 
 message FindFilterRequest {
@@ -99,8 +99,16 @@ message ExtendFilterRequest {
   repeated string addresses = 3;
 }
 
-message FilterResponse {
+message CreateFilterResponse {
   string error = 1;
+  Filter result = 2;
+}
+
+message FindFilterResponse {
+  Filter result = 2;
+}
+
+message ExtendFilterResponse {
   Filter result = 2;
 }
 
@@ -109,25 +117,26 @@ message RemoveFilterRequest {
 }
 
 message RemoveFilterResponse {
-  string error = 1;
+  string message = 1;
 }
 
 message GetHeadersStreamRequest {
-  string startId = 1;
-  string endId = 2;
-  string blockchainId = 3;
+  int64 from_seq_id = 1;
+  optional string blockchain_id = 3;
 }
 
 message GetHeadersStreamResponse {
-  string error = 1;
-  BlockHeader result = 2;
+  // seq_id increments by 1 for each new message in the stream, so that the client can request the next message by incrementing the seq_id
+  int64 seq_id = 1;
+  BlockHeader header = 2;
+  bool undo = 3;
 }
 
-service Api {
-  rpc FindBlocksById(GetBlocksRequest) returns (GetBlocksResponse) {};
+service ApiService {
+  rpc FindBlocks(FindBlocksRequest) returns (FindBlocksResponse) {};
   rpc GetHeadersStream(GetHeadersStreamRequest) returns (stream GetHeadersStreamResponse) {};
-  rpc FindFilter(FindFilterRequest) returns (FilterResponse) {};
-  rpc CreateFilter(CreateFilterRequest) returns (FilterResponse) {};
-  rpc ExtendFilter(ExtendFilterRequest) returns (FilterResponse) {};
+  rpc FindFilter(FindFilterRequest) returns (FindFilterResponse) {};
+  rpc CreateFilter(CreateFilterRequest) returns (CreateFilterResponse) {};
+  rpc ExtendFilter(ExtendFilterRequest) returns (ExtendFilterResponse) {};
   rpc RemoveFilter(RemoveFilterRequest) returns (RemoveFilterResponse) {};
 }
